@@ -23,7 +23,7 @@ def walk(root, topdown=True, onerror=None, followlinks=False):
                 p = os.path.join(dirpath, d)
                 if os.path.islink(p):
                     for link_dirpath, link_dirnames, link_filenames in walk(p):
-                        yield (link_dirpath, link_dirname
+                        yield (link_dirpath, link_dirname, link_filenames)
 
 def is_ignored(path, ignore_patterns):
     """
