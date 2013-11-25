@@ -5,13 +5,50 @@ from django.core.management.base import CommandError, NoArgsCommand
 from optparse import make_option
 from subprocess import PIPE, Popen
 import os, glob, io, sys
-
+import fnmatch
 
 def _popen(cmd):
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     output, errors = p.communicate()
     return output, errors, p.returncode
 
+def walk(root, topdown=True, onerror=None, followlinks=False):
+    """
+    A version of os.walk that can follow symlinks for Python < 2.6
+    """
+    for dirpath, dirnames, filenames in os.walk(root, topdown, onerror):
+        yield (dirpath, dirnames, filenames)
+        if followlinks:
+            for d in dirnames:
+                p = os.path.join(dirpath, d)
+                if os.path.islink(p):
+                    for link_dirpath, link_dirnames, link_filenames in walk(p):
+                        yield (link_dirpath, link_dirname
+
+def is_ignored(path, ignore_patterns):
+    """
+    Helper function to check if the given path should be ignored or not.
+    """
+    for pattern in ignore_patterns:
+        if fnmatch.fnmatchcase(path, pattern):
+            return True
+    return False
+
+def find_files(root, ignore_patterns, verbosity, symlinks=False):
+    """
+    Helper function to get all files in the given root.
+    """
+    all_files = []
+    for (dirpath, dirnames, filenames) in walk(".", followlinks=symlinks):
+        for f in filenames:
+            norm_filepath = os.path.normpath(os.path.join(dirpath, f))
+            if is_ignored(norm_filepath, ignore_patterns):
+                if verbosity > 1:
+                    sys.stdout.write('ignoring file %s in %s\n' % (f, dirpath))
+            else:
+                all_files.extend([(dirpath, f)])
+    all_files.sort()
+    return all_files
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
