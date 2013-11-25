@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from django.core.management.commands.makemessages import find_files
 from django.core.management.base import CommandError, NoArgsCommand
 from optparse import make_option
 from subprocess import PIPE, Popen
