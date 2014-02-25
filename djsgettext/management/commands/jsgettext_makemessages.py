@@ -63,9 +63,9 @@ class Command(NoArgsCommand):
 
         make_option('--ignore', '-i', action='append', dest='ignore_patterns',
             default=[], metavar='PATTERN', help='Ignore files or directories matching this glob-style pattern. Use multiple times to ignore more.'),
-    )
 
-    domain = 'djsgettext'
+        make_option('--domain', '-d', dest='domain', default='djsgettext', help='set the domain'),
+    )
 
     def handle_noargs(self, *args, **options):
         locale = options.get('locale')
@@ -76,6 +76,7 @@ class Command(NoArgsCommand):
         if options.get('use_default_ignore_patterns'):
             ignore_patterns += ['CVS', '.*', '*~', '*.pyc']
         self.ignore_patterns = list(set(ignore_patterns))
+        self.domain = options.get('domain')
 
         if not extensions:
             extensions = ['html']
